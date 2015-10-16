@@ -1,0 +1,14 @@
+{
+  "name": "GroveSensors",
+  "version": "0.0.1",
+  "description": "GroveSensors",
+  "main": "app.js",
+  "author": "MikeJenne",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Grove"
+  ],
+  "license": "ISC"
+}
