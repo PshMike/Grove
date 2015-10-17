@@ -79,7 +79,7 @@ export class GroveTemperature extends GroveAnalogSensor {
         if (this.version = 1.2) {
             var B = 4275;
             var R0 = 100000;
-        
+
             var R: number;
             var t: number;
 
@@ -89,11 +89,12 @@ export class GroveTemperature extends GroveAnalogSensor {
             t = 1.0 / (log(R / 100000.0) / B + 1 / 298.15) - 273.15;    //convert to temperature via datasheet ;
  
             this.temperature = t;
+        }
+
+
+
+
+
+
     }
-
-
-
-
-
-
 }
