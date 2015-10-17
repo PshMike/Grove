@@ -3,12 +3,12 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var GroveSensorCategory;
 (function (GroveSensorCategory) {
     GroveSensorCategory[GroveSensorCategory["ANALOG"] = 0] = "ANALOG";
     GroveSensorCategory[GroveSensorCategory["DIGITAL"] = 1] = "DIGITAL";
     GroveSensorCategory[GroveSensorCategory["I2C"] = 2] = "I2C";
-})(GroveSensorCategory || (GroveSensorCategory = {}));
+})(exports.GroveSensorCategory || (exports.GroveSensorCategory = {}));
+var GroveSensorCategory = exports.GroveSensorCategory;
 var GroveSensor = (function () {
     //constructor
     function GroveSensor(cat, vcc) {
@@ -18,6 +18,18 @@ var GroveSensor = (function () {
             this.VCC = 5;
         }
     }
+    GroveSensor.prototype.AnalogSample = function (pin, samplecount) {
+        var i;
+        var sum;
+        if (!samplecount) {
+            samplecount = 10;
+        }
+        sum = 0;
+        for (i = 0; i < samplecount; i++) {
+            sum += AnalogRead(pin);
+        }
+        return sum / samplecount;
+    };
     return GroveSensor;
 })();
 exports.GroveSensor = GroveSensor;
@@ -31,4 +43,4 @@ var GroveTemp = (function (_super) {
     return GroveTemp;
 })(GroveSensor);
 exports.GroveTemp = GroveTemp;
-//# sourceMappingURL=app.js.map
+//# sourceMappingURL=GroveSensors.js.map
