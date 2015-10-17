@@ -3,22 +3,26 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-(function (GroveSensorCategory) {
-    GroveSensorCategory[GroveSensorCategory["ANALOG"] = 0] = "ANALOG";
-    GroveSensorCategory[GroveSensorCategory["DIGITAL"] = 1] = "DIGITAL";
-    GroveSensorCategory[GroveSensorCategory["I2C"] = 2] = "I2C";
-})(exports.GroveSensorCategory || (exports.GroveSensorCategory = {}));
-var GroveSensorCategory = exports.GroveSensorCategory;
-var GroveSensor = (function () {
+var GroveAnalogSensor = (function () {
     //constructor
-    function GroveSensor(cat, vcc) {
-        this.VCC = vcc;
-        this.category = cat;
-        if (!this.VCC) {
+    function GroveAnalogSensor(_pin, _version, _vcc) {
+        this.version = _version;
+        if (_version) {
+            this.version = _version;
+        }
+        else {
+            this.version = 1.0;
+        }
+        if (_vcc) {
+            this.VCC = _vcc;
+        }
+        else {
             this.VCC = 5;
         }
+        var m = require("mraa");
+        this.analogPin = new m.Aio(_pin);
     }
-    GroveSensor.prototype.AnalogSample = function (pin, samplecount) {
+    GroveAnalogSensor.prototype.getSample = function (samplecount) {
         var i;
         var sum;
         if (!samplecount) {
@@ -26,21 +30,37 @@ var GroveSensor = (function () {
         }
         sum = 0;
         for (i = 0; i < samplecount; i++) {
-            sum += AnalogRead(pin);
+            sum += this.analogPin.read();
         }
         return sum / samplecount;
     };
-    return GroveSensor;
+    return GroveAnalogSensor;
 })();
-exports.GroveSensor = GroveSensor;
-var GroveTemp = (function (_super) {
-    __extends(GroveTemp, _super);
+exports.GroveAnalogSensor = GroveAnalogSensor;
+var GroveTemperature = (function (_super) {
+    __extends(GroveTemperature, _super);
     //constructor
-    function GroveTemp(pin, VCC) {
-        _super.call(this, VCC, GroveSensorCategory.ANALOG);
-        this.analogPin = pin;
+    function GroveTemperature(_pin, _version, _vcc) {
+        _super.call(this, _pin, _version, _vcc);
     }
-    return GroveTemp;
-})(GroveSensor);
-exports.GroveTemp = GroveTemp;
-//# sourceMappingURL=GroveSensors.js.map
+    GroveTemperature.prototype.getTemp = function () {
+        return this.temperature;
+    };
+    GroveTemperature.prototype.update = function () {
+        var a;
+        a = this.getSample();
+        if (this.version = 1.2) {
+            var B = 4275;
+            var R0 = 100000;
+            var R;
+            var t;
+            R = 1023.0 / a - 1.0;
+            R = 100000.0 * R;
+            t = 1.0 / (log(R / 100000.0) / B + 1 / 298.15) - 273.15; //convert to temperature via datasheet ;
+            this.temperature = t;
+        }
+    };
+    return GroveTemperature;
+})(GroveAnalogSensor);
+exports.GroveTemperature = GroveTemperature;
+//# sourceMappingURL=grove-sensors.js.map
