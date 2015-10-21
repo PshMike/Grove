@@ -38,16 +38,19 @@ var MJGrove;
         };
         return GroveAnalogSensor;
     })();
-    MJGrove.GroveAnalogSensor = GroveAnalogSensor;
     var GroveTemperature = (function (_super) {
         __extends(GroveTemperature, _super);
         //constructor
         function GroveTemperature(_pin, _version, _vcc) {
             _super.call(this, _pin, _version, _vcc);
         }
-        GroveTemperature.prototype.getTemp = function () {
-            return this.temperature;
-        };
+        Object.defineProperty(GroveTemperature.prototype, "temperature", {
+            get: function () {
+                return this._temperature;
+            },
+            enumerable: true,
+            configurable: true
+        });
         GroveTemperature.prototype.update = function () {
             var a;
             a = this.getSample();
@@ -59,11 +62,50 @@ var MJGrove;
                 R = 1023.0 / a - 1.0;
                 R = 100000.0 * R;
                 t = 1.0 / (Math.log(R / 100000.0) / B + 1 / 298.15) - 273.15; //convert to temperature via datasheet ;
-                this.temperature = t;
+                this._temperature = t;
             }
         };
         return GroveTemperature;
     })(GroveAnalogSensor);
     MJGrove.GroveTemperature = GroveTemperature;
+    var GroveRotaryAngleSensor = (function (_super) {
+        __extends(GroveRotaryAngleSensor, _super);
+        function GroveRotaryAngleSensor(_pin, _version, _vcc) {
+            _super.call(this, _pin, _version, _vcc);
+            if (_version = 1) {
+                this._FULLRANGE = 300;
+            }
+        }
+        Object.defineProperty(GroveRotaryAngleSensor.prototype, "angle", {
+            get: function () {
+                return this._angle;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(GroveRotaryAngleSensor.prototype, "voltage", {
+            get: function () {
+                return this._voltage;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(GroveRotaryAngleSensor.prototype, "rawValue", {
+            get: function () {
+                return this._rawValue;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        GroveRotaryAngleSensor.prototype.update = function () {
+            var a;
+            a = this.getSample();
+            this._voltage = a * this.VCC / 1023;
+            this._angle = a * 360 / 1023;
+            this._rawValue = a;
+        };
+        return GroveRotaryAngleSensor;
+    })(GroveAnalogSensor);
+    MJGrove.GroveRotaryAngleSensor = GroveRotaryAngleSensor;
 })(MJGrove = exports.MJGrove || (exports.MJGrove = {}));
 //# sourceMappingURL=grove-sensors.js.map

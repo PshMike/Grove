@@ -1,6 +1,6 @@
 ﻿export module MJGrove {
 
-    export class GroveAnalogSensor {
+    class GroveAnalogSensor {
         // Properties (public by default)
 
         // VCC is the voltage the circuit is operating at. For Grove sensors this can be either 3.3v or
@@ -33,7 +33,7 @@
 
 
         //constructor
-        constructor(_pin: number, _version?: number, _vcc?: number) {
+        constructor(_pin: Intel.IoT.Aio, _version?: number, _vcc?: number) {
             this.version = _version;
 
             if (_version) {
@@ -55,23 +55,22 @@
         }
     }
 
-
     export class GroveTemperature extends GroveAnalogSensor {
         // Properties (public by default)
-        rawValue: number;
-        private temperature: number;
+        private _rawValue: number;
+        private _temperature: number;
 
         //constructor
-        constructor(_pin: number, _version: number, _vcc?: number) {
+        constructor(_pin: Intel.IoT.Aio, _version: number, _vcc?: number) {
             super(_pin, _version, _vcc)
 
         }
 
-        getTemp(): number {
-            return this.temperature;
+        public get temperature(): number {
+            return this._temperature;
         }
 
-        update(): void {
+        public update(): void {
 
             var a: number;
 
@@ -89,7 +88,7 @@
 
                 t = 1.0 / (Math.log(R / 100000.0) / B + 1 / 298.15) - 273.15;    //convert to temperature via datasheet ;
  
-                this.temperature = t;
+                this._temperature = t;
             }
 
 
@@ -99,6 +98,51 @@
 
         }
     }
+
+    export class GroveRotaryAngleSensor extends GroveAnalogSensor {
+        // properties
+
+        private _angle: number;
+        private _voltage: number;
+        private _rawValue: number;
+        private _FULLRANGE: number;
+
+        constructor(_pin: Intel.IoT.Aio, _version: number, _vcc?: number) {
+            super(_pin, _version, _vcc);
+
+            if (_version = 1) {
+                this._FULLRANGE = 300;
+            }
+
+        }
+
+        public get angle(): number {
+            return this._angle;
+        }
+
+        public get voltage(): number {
+            return this._voltage;}
+
+        public get rawValue(): number {
+            return this._rawValue;
+        }
+
+        public update(): void {
+
+            var a: number;
+
+            a = this.getSample();
+
+            this._voltage = a * this.VCC / 1023;
+            this._angle = a * 360 / 1023;
+            this._rawValue = a;
+        }
+
+
+
+
+    }
+
 
 }
 
