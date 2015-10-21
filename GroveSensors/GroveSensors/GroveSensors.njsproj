@@ -36,7 +36,9 @@
     <Compile Include="grove-sensors.ts" />
     <Content Include="package.json" />
     <Content Include="README.md" />
-    <TypeScriptCompile Include="mraa.d.ts" />
+    <TypeScriptCompile Include="mraa.d.ts">
+      <Publish>True</Publish>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="Scripts\typings\node\node.d.ts" />
   </ItemGroup>
   <ItemGroup>

@@ -1,57 +1,54 @@
 ﻿export module MJGrove {
 
     class GroveAnalogSensor {
-        // Properties (public by default)
+        // Properties
 
         // VCC is the voltage the circuit is operating at. For Grove sensors this can be either 3.3v or
         // 5 volts, and some sensors need this voltage known in order to correctly calculate their output
-        VCC: number;
+        private _vcc: number;
 
         // some Grove sensors have undergone revisions that impact the calculation of their values.
         // rather than having 3 different classes for 3 different versions of temperature sensors, using
-        // this version property will allow for the correct formula to be used to compute temp
-        version: number;
+        // this version property will allow for the correct formula to be used in sensor computations
+        private _version: number;
 
-        analogPin: Intel.IoT.Aio;
+        // TODO:
+        // validate vcc values
+        // validate pin values
 
-        getSample(samplecount?: number) {
+        getSample(pin: Intel.IoT.Aio, samplecount?: number) {
             var i: number;
             var sum: number;
 
             if (!samplecount) {
-                samplecount = 10;
+                samplecount = 1;
             }
+
+            var m = require("mraa");
+            var analogPin = new m.Aio(pin);
 
             sum = 0;
 
             for (i = 0; i < samplecount; i++) {
-                sum += this.analogPin.read();
+                sum += analogPin.read();
 
             }
             return sum / samplecount;
         }
 
+        public get version(): number {
+            return this._version;
+        }
+
+        public get vcc(): number {
+            return this._vcc;
+        }
 
         //constructor
-        constructor(_pin: Intel.IoT.Aio, _version?: number, _vcc?: number) {
-            this.version = _version;
+        constructor(version = 1, vcc = 5) {
 
-            if (_version) {
-                this.version = _version;
-            } else {
-                this.version = 1.0;
-            }
-            if (_vcc) {
-                this.VCC = _vcc;
-            } else {
-                this.VCC = 5;
-            }
-
-            var m = require("mraa");
-            this.analogPin = new m.Aio(_pin);
-
-
-
+            this._version = version;
+            this._vcc = vcc;
         }
     }
 
@@ -59,10 +56,13 @@
         // Properties (public by default)
         private _rawValue: number;
         private _temperature: number;
+        private _pin: Intel.IoT.Aio;
 
         //constructor
-        constructor(_pin: Intel.IoT.Aio, _version: number, _vcc?: number) {
-            super(_pin, _version, _vcc)
+        constructor(pin: Intel.IoT.Aio, version: number, vcc?: number) {
+            super(version, vcc)
+
+            this._pin = pin;
 
         }
 
@@ -74,7 +74,7 @@
 
             var a: number;
 
-            a = this.getSample();
+            a = this.getSample(this._pin);
 
             if (this.version = 1.2) {
                 var B = 4275;
@@ -86,16 +86,10 @@
                 R = 1023.0 / a - 1.0;
                 R = 100000.0 * R;
 
-                t = 1.0 / (Math.log(R / 100000.0) / B + 1 / 298.15) - 273.15;    //convert to temperature via datasheet ;
+                t = 1.0 / (Math.log(R / 100000.0) / B + 1 / 298.15) - 273.15;
  
                 this._temperature = t;
             }
-
-
-
-
-
-
         }
     }
 
@@ -106,13 +100,16 @@
         private _voltage: number;
         private _rawValue: number;
         private _FULLRANGE: number;
+        private _pin: Intel.IoT.Aio;
 
-        constructor(_pin: Intel.IoT.Aio, _version: number, _vcc?: number) {
-            super(_pin, _version, _vcc);
+        constructor(pin: Intel.IoT.Aio, version: number, vcc?: number) {
+            super(version, vcc);
 
-            if (_version = 1) {
+            if (version = 1) {
                 this._FULLRANGE = 300;
             }
+
+            this._pin = pin;
 
         }
 
@@ -121,28 +118,31 @@
         }
 
         public get voltage(): number {
-            return this._voltage;}
+            return this._voltage;
+        }
 
         public get rawValue(): number {
             return this._rawValue;
         }
-
+    
         public update(): void {
 
             var a: number;
 
-            a = this.getSample();
+            a = this.getSample(this._pin);
 
-            this._voltage = a * this.VCC / 1023;
-            this._angle = a * 360 / 1023;
+            this._voltage = a * this.vcc / 1023;
+            this._angle = a * this._FULLRANGE / 1023;
             this._rawValue = a;
         }
-
-
-
-
     }
 
+    export class GroveLightSensor extends GroveAnalogSensor {
+        private _value: number;
 
+        constructor(pin: Intel.IoT.Aio, version: number, vcc: number) {
+            super(version, vcc);
+        }
+    }
 }
 
