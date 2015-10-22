@@ -1,6 +1,6 @@
 {
   "name": "grove-sensors",
-  "version": "0.0.12",
+  "version": "0.0.14",
   "description": "GroveSensors",
   "main": "grove-sensors.js",
   "author": "MikeJenne",
@@ -9,6 +9,10 @@
   },
   "keywords": [
     "Grove"
+  ],
+  "files": [
+    "grove-sensors.js",
+    "README.md"
   ],
   "license": "ISC"
 }

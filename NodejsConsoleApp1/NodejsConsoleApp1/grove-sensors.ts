@@ -1,5 +1,5 @@
 ﻿export module MyGrove {
-    export class GroveAnalogSensor {
+    class GroveAnalogSensor {
         // Properties
 
         // VCC is the voltage the circuit is operating at. For Grove sensors this can be either 3.3v or
@@ -15,13 +15,9 @@
         // validate vcc values
         // validate pin values
 
-        getSample(pin: Intel.IoT.Aio, samplecount?: number) {
+        getSample(pin: Intel.IoT.Aio, samplecount = 1) {
             var i: number;
             var sum: number;
-
-            if (!samplecount) {
-                samplecount = 1;
-            }
 
             var m = require("mraa");
             var analogPin = new m.Aio(pin);
@@ -138,6 +134,31 @@
 
     export class GroveLightSensor extends GroveAnalogSensor {
         private _value: number;
+        private _pin: Intel.IoT.Aio;
+
+        constructor(pin: Intel.IoT.Aio, version: number, vcc: number) {
+            super(version, vcc);
+
+            this._pin = pin;
+        }
+
+        public get value(): number {
+            return this._value;
+        }
+
+        public update(): void {
+
+            var a: number;
+
+            a = this.getSample(this._pin);
+
+            this._value = a;
+        }
+    }
+
+    export class GroveSoundSensor extends GroveAnalogSensor {
+        private _value: number;
+        private _pin: Intel.IoT.Aio;
 
         constructor(pin: Intel.IoT.Aio, version: number, vcc: number) {
             super(version, vcc);
@@ -145,6 +166,42 @@
 
         public get value(): number {
             return this._value;
+        }
+
+        public update(): void {
+
+            var a: number;
+            a = this.getSample(this._pin);
+
+            this._value = a;
+        }
+    }
+    
+    export class GroveHighTempSensor extends GroveAnalogSensor {
+        private _value: number;
+        private _pinAmbient: Intel.IoT.Aio;
+        private _pinThmc: Intel.IoT.Aio;
+        private _tempThmc: number;
+        private _tempAmbient: number;
+
+        constructor(pinAmbient: Intel.IoT.Aio, pinThmc: Intel.IoT.Aio, version: number, vcc: number) {
+            super(version, vcc);
+
+            this._pinAmbient = pinAmbient;
+            this._pinThmc = pinThmc;
+
+        }
+
+        public get value(): number {
+            return this._value;
+        }
+
+        public update(): void {
+
+            var a: number;
+            a = this.getSample(this._pin);
+
+            this._value = a;
         }
     }
 

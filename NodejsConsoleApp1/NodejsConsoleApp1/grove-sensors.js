@@ -17,11 +17,9 @@ var MyGrove;
         // validate vcc values
         // validate pin values
         GroveAnalogSensor.prototype.getSample = function (pin, samplecount) {
+            if (samplecount === void 0) { samplecount = 1; }
             var i;
             var sum;
-            if (!samplecount) {
-                samplecount = 1;
-            }
             var m = require("mraa");
             var analogPin = new m.Aio(pin);
             sum = 0;
@@ -46,7 +44,6 @@ var MyGrove;
         });
         return GroveAnalogSensor;
     })();
-    MyGrove.GroveAnalogSensor = GroveAnalogSensor;
     var GroveTemperature = (function (_super) {
         __extends(GroveTemperature, _super);
         //constructor
@@ -122,6 +119,7 @@ var MyGrove;
         __extends(GroveLightSensor, _super);
         function GroveLightSensor(pin, version, vcc) {
             _super.call(this, version, vcc);
+            this._pin = pin;
         }
         Object.defineProperty(GroveLightSensor.prototype, "value", {
             get: function () {
@@ -130,7 +128,54 @@ var MyGrove;
             enumerable: true,
             configurable: true
         });
+        GroveLightSensor.prototype.update = function () {
+            var a;
+            a = this.getSample(this._pin);
+            this._value = a;
+        };
         return GroveLightSensor;
     })(GroveAnalogSensor);
     MyGrove.GroveLightSensor = GroveLightSensor;
+    var GroveSoundSensor = (function (_super) {
+        __extends(GroveSoundSensor, _super);
+        function GroveSoundSensor(pin, version, vcc) {
+            _super.call(this, version, vcc);
+        }
+        Object.defineProperty(GroveSoundSensor.prototype, "value", {
+            get: function () {
+                return this._value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        GroveSoundSensor.prototype.update = function () {
+            var a;
+            a = this.getSample(this._pin);
+            this._value = a;
+        };
+        return GroveSoundSensor;
+    })(GroveAnalogSensor);
+    MyGrove.GroveSoundSensor = GroveSoundSensor;
+    var GroveHighTempSensor = (function (_super) {
+        __extends(GroveHighTempSensor, _super);
+        function GroveHighTempSensor(pinAmbient, pinThmc, version, vcc) {
+            _super.call(this, version, vcc);
+            this._pinAmbient = pinAmbient;
+            this._pinThmc = pinThmc;
+        }
+        Object.defineProperty(GroveHighTempSensor.prototype, "value", {
+            get: function () {
+                return this._value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        GroveHighTempSensor.prototype.update = function () {
+            var a;
+            a = this.getSample(this._pin);
+            this._value = a;
+        };
+        return GroveHighTempSensor;
+    })(GroveAnalogSensor);
+    MyGrove.GroveHighTempSensor = GroveHighTempSensor;
 })(MyGrove = exports.MyGrove || (exports.MyGrove = {}));
