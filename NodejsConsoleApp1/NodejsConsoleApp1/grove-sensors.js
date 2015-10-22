@@ -5,8 +5,16 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var MyGrove;
 (function (MyGrove) {
+    var relayState;
+    (function (relayState) {
+        relayState[relayState["open"] = 0] = "open";
+        relayState[relayState["closed"] = 1] = "closed";
+    })(relayState || (relayState = {}));
+    ;
     var GroveAnalogSensor = (function () {
+        // end public Accessors
         //constructor
+        // putting the default values in the constructor call makes both params optional
         function GroveAnalogSensor(version, vcc) {
             if (version === void 0) { version = 1; }
             if (vcc === void 0) { vcc = 5; }
@@ -16,6 +24,10 @@ var MyGrove;
         // TODO:
         // validate vcc values
         // validate pin values
+        // this method placed in this base class so it is available to all analog sensors derived from this base class
+        // this method is meant to account of random "blips" when doing analog pin reads by taking a larger sample and
+        // then returning the average
+        // TODO: come up with a way look at the sampled values and "discard" any wild outliers
         GroveAnalogSensor.prototype.getSample = function (pin, samplecount) {
             if (samplecount === void 0) { samplecount = 1; }
             var i;
@@ -29,6 +41,7 @@ var MyGrove;
             return sum / samplecount;
         };
         Object.defineProperty(GroveAnalogSensor.prototype, "version", {
+            // begin public Accessors
             get: function () {
                 return this._version;
             },
@@ -58,16 +71,17 @@ var MyGrove;
             enumerable: true,
             configurable: true
         });
-        GroveTemperature.prototype.update = function () {
+        GroveTemperature.prototype.update = function (sampleSize) {
+            // the url below was used to create compute temperature for v1.2 sensors
+            // http://www.seeedstudio.com/wiki/Grove_-_Temperature_Sensor_V1.2
+            if (sampleSize === void 0) { sampleSize = 1; }
             var a;
-            a = this.getSample(this._pin);
+            a = this.getSample(this._pin, sampleSize);
             if (this.version = 1.2) {
                 var B = 4275;
-                var R0 = 100000;
                 var R;
                 var t;
-                R = 1023.0 / a - 1.0;
-                R = 100000.0 * R;
+                R = (1023.0 / a - 1.0) * 100000.0;
                 t = 1.0 / (Math.log(R / 100000.0) / B + 1 / 298.15) - 273.15;
                 this._temperature = t;
             }
@@ -105,9 +119,10 @@ var MyGrove;
             enumerable: true,
             configurable: true
         });
-        GroveRotaryAngleSensor.prototype.update = function () {
+        GroveRotaryAngleSensor.prototype.update = function (sampleSize) {
+            if (sampleSize === void 0) { sampleSize = 1; }
             var a;
-            a = this.getSample(this._pin);
+            a = this.getSample(this._pin, sampleSize);
             this._voltage = a * this.vcc / 1023;
             this._angle = a * this._FULLRANGE / 1023;
             this._rawValue = a;
@@ -128,9 +143,10 @@ var MyGrove;
             enumerable: true,
             configurable: true
         });
-        GroveLightSensor.prototype.update = function () {
+        GroveLightSensor.prototype.update = function (sampleSize) {
+            if (sampleSize === void 0) { sampleSize = 1; }
             var a;
-            a = this.getSample(this._pin);
+            a = this.getSample(this._pin, sampleSize);
             this._value = a;
         };
         return GroveLightSensor;
@@ -148,9 +164,10 @@ var MyGrove;
             enumerable: true,
             configurable: true
         });
-        GroveSoundSensor.prototype.update = function () {
+        GroveSoundSensor.prototype.update = function (sampleSize) {
+            if (sampleSize === void 0) { sampleSize = 1; }
             var a;
-            a = this.getSample(this._pin);
+            a = this.getSample(this._pin, sampleSize);
             this._value = a;
         };
         return GroveSoundSensor;
@@ -160,6 +177,10 @@ var MyGrove;
         __extends(GroveHighTempSensor, _super);
         function GroveHighTempSensor(pinAmbient, pinThmc, version, vcc) {
             _super.call(this, version, vcc);
+            if (version = 1) {
+                this.VOL_OFFSET = 350;
+                this.AMP_AV = 54.16;
+            }
             this._pinAmbient = pinAmbient;
             this._pinThmc = pinThmc;
         }
@@ -177,6 +198,20 @@ var MyGrove;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(GroveHighTempSensor.prototype, "tempAmbient", {
+            get: function () {
+                return this._tempAmbient;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(GroveHighTempSensor.prototype, "tempThmc", {
+            get: function () {
+                return this._tempThmc;
+            },
+            enumerable: true,
+            configurable: true
+        });
         GroveHighTempSensor.prototype.UpdateAmbient = function () {
             var a;
             var resistance;
@@ -186,13 +221,14 @@ var MyGrove;
             temp = 1 / (Math.log(resistance / 10000) / 3975 + 1 / 298.15) - 273.15;
             this._tempAmbient = temp;
         };
-        GroveHighTempSensor.prototype.update = function () {
+        GroveHighTempSensor.prototype.update = function (n) {
             // read analog pins
-            this._rawAmbient = this.getSample(this._pinAmbient);
-            this._rawThmc = this.getSample(this._pinThmc);
+            if (n === void 0) { n = 1; }
+            this._rawAmbient = this.getSample(this._pinAmbient, n);
+            this._rawThmc = this.getSample(this._pinThmc, n);
             this.UpdateAmbient();
             // get voltage of thmc
-            this._voltage = ((this._rawThmc / 1023.0 * 5.0 * 1000) - GroveHighTempSensor.VOL_OFFSET) / GroveHighTempSensor.AMP_AV;
+            this._voltage = ((this._rawThmc / 1023.0 * 5.0 * 1000) - this.VOL_OFFSET) / this.AMP_AV;
             // convert voltage to K
             var Var_VtoT_K = [[0, 2.5173462e1, -1.1662878, -1.0833638, -8.9773540 / 1e1, -3.7342377 / 1e1, -8.6632643 / 1e2, -1.0450598 / 1e2, -5.1920577 / 1e4],
                 [0, 2.508355e1, 7.860106 / 1e2, -2.503131 / 1e1, 8.315270 / 1e2, -1.228034 / 1e2, 9.804036 / 1e4, -4.413030 / 1e5, 1.057734 / 1e6, -1.052755 / 1e8],
@@ -219,9 +255,28 @@ var MyGrove;
             // update private members
             this._tempThmc = value + this._tempAmbient;
         };
-        GroveHighTempSensor.VOL_OFFSET = 350;
-        GroveHighTempSensor.AMP_AV = 54.16;
         return GroveHighTempSensor;
     })(GroveAnalogSensor);
     MyGrove.GroveHighTempSensor = GroveHighTempSensor;
+    var GroveRelay = (function () {
+        // constructor
+        function GroveRelay(pin, version) {
+            if (version === void 0) { version = 1; }
+            var m = require('mraa');
+            this.digitalPin = m.Gpio(pin);
+            m.
+                this.version = version;
+            this.state = relayState.open;
+        }
+        GroveRelay.prototype.Open = function () {
+            this.digitalPin.write(0);
+            this.state = relayState.open;
+        };
+        GroveRelay.prototype.Close = function () {
+            this.digitalPin.write(1);
+            this.state = relayState.closed;
+        };
+        return GroveRelay;
+    })();
+    MyGrove.GroveRelay = GroveRelay;
 })(MyGrove = exports.MyGrove || (exports.MyGrove = {}));

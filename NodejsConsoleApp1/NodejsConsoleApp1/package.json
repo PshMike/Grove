@@ -1,6 +1,6 @@
 {
   "name": "grove-sensors",
-  "version": "0.0.14",
+  "version": "0.1.0",
   "description": "GroveSensors",
   "main": "grove-sensors.js",
   "author": "MikeJenne",
